@@ -1,4 +1,4 @@
-gipfl\\Protocol
-===============
+nonini\\Protocol
+================
 
-Base library for some network protocol implementations.
+Base library for some network protocol implementations based on ReactPHP.

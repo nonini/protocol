@@ -1,6 +1,6 @@
 <?php
 
-namespace gipfl\Protocol\Generic;
+namespace nonini\Protocol\Generic;
 
 use Evenement\EventEmitterTrait;
 use Exception;
@@ -14,27 +14,26 @@ abstract class AbstractStreamWrapper implements DuplexStreamInterface
 {
     use EventEmitterTrait;
 
-    /** @var ReadableStreamInterface */
-    protected $input;
+    protected ReadableStreamInterface $input;
+    protected WritableStreamInterface $output;
 
-    /** @var WritableStreamInterface */
-    protected $output;
+    private bool $closed = false;
 
-    private $closed = false;
-
-    public function __construct(ReadableStreamInterface $in, WritableStreamInterface $out = null)
+    public function __construct(ReadableStreamInterface $in, ?WritableStreamInterface $out = null)
     {
         $this->readFrom($in);
         if ($out === null && $in instanceof WritableStreamInterface) {
             $this->writeTo($in);
-        } else {
+        } elseif ($out !== null) {
             $this->writeTo($out);
+        } else {
+            throw new \InvalidArgumentException('Either $in must be a writable stream, or $out must be given');
         }
     }
 
-    abstract public function handleData($data);
+    abstract public function handleData(string $data): void;
 
-    protected function readFrom(ReadableStreamInterface $input)
+    protected function readFrom(ReadableStreamInterface $input): void
     {
         $this->input = $input;
         if (! $input->isReadable()) {
@@ -55,7 +54,7 @@ abstract class AbstractStreamWrapper implements DuplexStreamInterface
         });
     }
 
-    protected function writeTo(WritableStreamInterface $output)
+    protected function writeTo(WritableStreamInterface $output): void
     {
         $this->output = $output;
         if (! $this->output->isWritable()) {
@@ -74,12 +73,12 @@ abstract class AbstractStreamWrapper implements DuplexStreamInterface
         });
     }
 
-    protected function handleDrain()
+    protected function handleDrain(): void
     {
         $this->emit('drain');
     }
 
-    protected function handleEnd()
+    protected function handleEnd(): void
     {
         if (! $this->closed) {
             $this->emit('end');
@@ -87,17 +86,17 @@ abstract class AbstractStreamWrapper implements DuplexStreamInterface
         }
     }
 
-    public function isReadable()
+    public function isReadable(): bool
     {
         return !$this->closed && $this->input->isReadable();
     }
 
-    public function isWritable()
+    public function isWritable(): bool
     {
         return !$this->closed && $this->output->isWritable();
     }
 
-    public function close()
+    public function close(): void
     {
         if ($this->closed) {
             return;
@@ -111,17 +110,22 @@ abstract class AbstractStreamWrapper implements DuplexStreamInterface
         $this->removeAllListeners();
     }
 
-    public function pause()
+    public function pause(): void
     {
         $this->input->pause();
     }
 
-    public function resume()
+    public function resume(): void
     {
         $this->input->resume();
     }
 
-    public function pipe(WritableStreamInterface $dest, array $options = [])
+    /**
+     * Hint: I've seen nothing but end => true/false for $options
+     *
+     * @param array<string, scalar> $options
+     */
+    public function pipe(WritableStreamInterface $dest, array $options = []): WritableStreamInterface
     {
         Util::pipe($this, $dest, $options);
 
@@ -131,7 +135,7 @@ abstract class AbstractStreamWrapper implements DuplexStreamInterface
     /**
      * @param Exception $error
      */
-    protected function handleError(Exception $error)
+    protected function handleError(Exception $error): void
     {
         $this->emit('error', [$error]);
         $this->close();

@@ -1,6 +1,6 @@
 <?php
 
-namespace gipfl\Protocol\Exception;
+namespace nonini\Protocol\Exception;
 
 use Exception;
 

@@ -1,5 +1,5 @@
 {
-    "name": "gipfl/protocol",
+    "name": "nonini/protocol",
     "description": "Base library for some network protocol implementations",
     "type": "library",
     "license": "MIT",
@@ -14,13 +14,19 @@
     },
     "autoload": {
         "psr-4": {
-            "gipfl\\Protocol\\Exception\\": "src/Exception",
-            "gipfl\\Protocol\\Generic\\": "src/Generic"
+            "nonini\\Protocol\\Exception\\": "src/Exception",
+            "nonini\\Protocol\\Generic\\": "src/Generic"
         }
     },
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=8.1",
         "evenement/evenement": "^2|^3",
         "react/stream": "^1"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10 || ^2",
+        "phpunit/phpunit": "^10.3 || ^13",
+        "squizlabs/php_codesniffer": "^3.7 || ^4",
+        "symplify/easy-coding-standard": "^12.0.8 || ^13"
     }
 }
